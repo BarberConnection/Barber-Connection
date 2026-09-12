@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barber Connection - Transforma Tu Barbería en un Negocio Rentable</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <header>
+        <div class="container">
+            <div class="navbar">
+                <a href="index.html" class="logo">✂️ Barber Connection</a>
+                <nav>
+                    <ul>
+                        <li><a href="#problema">El Problema</a></li>
+                        <li><a href="#solucion">Qué Hacemos</a></li>
+                        <li><a href="#diagnostico">Diagnóstico</a></li>
+                        <li><a href="login.html" id="navAuthLink">Iniciar sesión</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Sección 1: Hero -->
+    <section class="hero">
+        <div class="container">
+            <h1>Transforma el talento de tus tijeras en una empresa rentable y escalable.</h1>
+            <p>Ayudamos a dueños de barberías a eliminar el caos financiero y organizar sus operaciones basándose en datos.</p>
+            <div id="authStatus" class="auth-status"></div>
+            <a href="diagnostico.html" class="cta-button">Analiza tu Barbería Hoy</a>
+        </div>
+    </section>
+
+    <!-- Sección 2: El Problema -->
+    <section class="problem" id="problema">
+        <div class="container">
+            <h2 class="section-title">¿Suena Familiar?</h2>
+            <p class="section-subtitle">Mucho trabajo, ingresos visibles pero rentabilidad oculta.</p>
+            
+            <div class="problems-grid">
+                <div class="problem-card">
+                    <div class="problem-icon">📝</div>
+                    <h3>Finanzas en Papel</h3>
+                    <p>Anotaciones dispersas que no te muestran la realidad de tu negocio. Sin claridad financiera, no hay decisiones estratégicas.</p>
+                </div>
+
+                <div class="problem-card">
+                    <div class="problem-icon">💳</div>
+                    <h3>Caos de Operaciones</h3>
+                    <p>Mezcla de finanzas personales y de negocio. Horarios desorganizados. Imposible conocer tu rentabilidad real.</p>
+                </div>
+
+                <div class="problem-card">
+                    <div class="problem-icon">📉</div>
+                    <h3>Sin Escalabilidad</h3>
+                    <p>Tu negocio está limitado por tu tiempo. No puedes crecer sin un sistema que funcione sin ti al 100%.</p>
+                </div>
+
+                <div class="problem-card">
+                    <div class="problem-icon">🎯</div>
+                    <h3>Decisiones al Azar</h3>
+                    <p>Incrementar precios, contratar personal, invertir en equipo... todo basado en intuición, no en datos reales.</p>
+                </div>
+
+                <div class="problem-card">
+                    <div class="problem-icon">⏰</div>
+                    <h3>Tiempo Gastado Mal</h3>
+                    <p>Pasas horas buscando recibos y facturas en lugar de enfocarte en lo que sabes hacer: cortar cabello y construir relaciones.</p>
+                </div>
+
+                <div class="problem-card">
+                    <div class="problem-icon">📊</div>
+                    <h3>Rentabilidad Desconocida</h3>
+                    <p>Ves dinero en caja, pero no sabes cuánto está siendo consumido por gastos operacionales y desperdicio.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección 3: Qué Hacemos -->
+    <section class="solution" id="solucion">
+        <div class="container">
+            <h2 class="section-title">Cómo Barber Connection Te Transforma</h2>
+            
+            <div class="solution-content">
+                <div class="solution-text">
+                    <h3>El Puente Entre el Arte y los Números</h3>
+                    <p>
+                        No te pedimos que abandones lo que amas: el barbering. 
+                        Lo que hacemos es <strong>organizar tu negocio de modo que funcione solo</strong>, 
+                        mientras tú te enfocas en la excelencia que define tu barbería.
+                    </p>
+
+                    <div class="solution-highlight">
+                        <strong>📊 Visibilidad Financiera Real</strong>
+                        <p>Dashboard claro que muestra tu rentabilidad diaria, gastos operacionales, y flujo de caja en tiempo real.</p>
+                    </div>
+
+                    <div class="solution-highlight">
+                        <strong>⚙️ Automatización de Operaciones</strong>
+                        <p>Reservas, control de inventario, nómina de barberos... todo organizado y automatizado.</p>
+                    </div>
+
+                    <div class="solution-highlight">
+                        <strong>📈 Decisiones Basadas en Datos</strong>
+                        <p>Herramientas de análisis que te muestran exactamente dónde están tus oportunidades de crecimiento.</p>
+                    </div>
+
+                    <div class="solution-highlight">
+                        <strong>🚀 Escalabilidad Comprobada</strong>
+                        <p>Sistemas que permiten que tu barbería crezca sin que dependas 100% de tu tiempo.</p>
+                    </div>
+                </div>
+
+                <div class="solution-image">
+                    <p>🎯 Tu barbería funcionando como un negocio real: organizado, rentable y escalable.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección 4: CTA Inferior -->
+    <section class="cta-section" id="diagnostico">
+        <div class="container">
+            <h2>¿Listo para Cambiar Tu Realidad?</h2>
+            <p>Toma el control de tu negocio y descubre cómo podemos ayudarte a crecer.</p>
+            <a href="diagnostico.html" class="cta-button">Realiza Tu Diagnóstico Gratis</a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 Barber Connection. Transformando barberías en negocios rentables y escalables.</p>
+    </footer>
+
+    <script src="logic.js"></script>
+    <script>
+        const authStatus = document.getElementById('authStatus');
+        const navAuthLink = document.getElementById('navAuthLink');
+
+        function renderAuthStatus() {
+            const currentUser = window.BarberAuth.getCurrentUser();
+            if (!currentUser) {
+                authStatus.innerHTML = '¿Ya tienes cuenta? <a href="login.html" style="color:#ffbb00">Inicia sesión</a>';
+                if (navAuthLink) {
+                    navAuthLink.textContent = 'Iniciar sesión';
+                }
+                return;
+            }
+
+            authStatus.innerHTML = `Hola, ${currentUser.name}. <button type="button" id="logoutButton">Cerrar sesión</button>`;
+            if (navAuthLink) {
+                navAuthLink.textContent = 'Cerrar sesión';
+                navAuthLink.href = '#';
+                navAuthLink.onclick = function (event) {
+    event.preventDefault();
+    window.BarberAuth.logoutUser();
+    renderAuthStatus();
+};
+            }
+
+            document.getElementById('logoutButton').addEventListener('click', () => {
+                window.BarberAuth.logoutUser();
+                renderAuthStatus();
+            });
+        }
+
+        renderAuthStatus();
+    </script>
+</body>
+</html>
