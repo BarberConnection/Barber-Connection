@@ -46,34 +46,5 @@
     </main>
 
     <script src="logic.js"></script>
-    <script>
-        const signupForm = document.getElementById('signupForm');
-        const formMessage = document.getElementById('formMessage');
-
-        signupForm.addEventListener('submit', function (event) {
-            event.preventDefault();
-
-            const name = signupForm.name.value;
-            const email = signupForm.email.value;
-            const password = signupForm.password.value;
-            const confirmPassword = signupForm.confirmPassword.value;
-
-            if (password !== confirmPassword) {
-                formMessage.textContent = 'Las contraseñas no coinciden.';
-                formMessage.className = 'form-message error';
-                return;
-            }
-
-            const result = window.BarberAuth.registerUser({ name, email, password });
-            formMessage.textContent = result.message;
-            formMessage.className = result.ok ? 'form-message success' : 'form-message error';
-
-            if (result.ok) {
-                setTimeout(() => {
-                    window.location.href = 'login.html';
-                }, 900);
-            }
-        });
-    </script>
 </body>
 </html>

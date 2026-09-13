@@ -36,26 +36,5 @@
     </main>
 
     <script src="logic.js"></script>
-    <script>
-        const form = document.getElementById('loginForm');
-        const message = document.getElementById('formMessage');
-
-        form.addEventListener('submit', function (event) {
-            event.preventDefault();
-
-            const email = form.email.value;
-            const password = form.password.value;
-            const result = window.BarberAuth.loginUser(email, password);
-
-            message.textContent = result.message;
-            message.className = result.ok ? 'form-message success' : 'form-message error';
-
-            if (result.ok) {
-                setTimeout(() => {
-                    window.location.href = 'dashboard.html';
-                }, 700);
-            }
-        });
-    </script>
 </body>
 </html>

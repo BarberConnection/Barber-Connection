@@ -137,38 +137,5 @@
     </footer>
 
     <script src="logic.js"></script>
-    <script>
-        const authStatus = document.getElementById('authStatus');
-        const navAuthLink = document.getElementById('navAuthLink');
-
-        function renderAuthStatus() {
-            const currentUser = window.BarberAuth.getCurrentUser();
-            if (!currentUser) {
-                authStatus.innerHTML = '¿Ya tienes cuenta? <a href="login.html" style="color:#ffbb00">Inicia sesión</a>';
-                if (navAuthLink) {
-                    navAuthLink.textContent = 'Iniciar sesión';
-                }
-                return;
-            }
-
-            authStatus.innerHTML = `Hola, ${currentUser.name}. <button type="button" id="logoutButton">Cerrar sesión</button>`;
-            if (navAuthLink) {
-                navAuthLink.textContent = 'Cerrar sesión';
-                navAuthLink.href = '#';
-                navAuthLink.onclick = function (event) {
-    event.preventDefault();
-    window.BarberAuth.logoutUser();
-    renderAuthStatus();
-};
-            }
-
-            document.getElementById('logoutButton').addEventListener('click', () => {
-                window.BarberAuth.logoutUser();
-                renderAuthStatus();
-            });
-        }
-
-        renderAuthStatus();
-    </script>
 </body>
 </html>

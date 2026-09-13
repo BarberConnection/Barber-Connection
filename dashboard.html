@@ -18,10 +18,10 @@
             </div>
 
             <nav class="sidebar-nav">
-                <a href="#" class="nav-item">👥 Clientes</a>
-                <a href="#" class="nav-item">✂️ Barberos</a>
+                <a href="#clientes" class="nav-item" id="clientsNav">👥 Clientes</a>
+                <a href="#barberos" class="nav-item" id="barbersNav">✂️ Barberos</a>
                 <a href="#" class="nav-item active">🛎️ Servicios</a>
-
+                <a href="#administracion" class="nav-item" id="administrationNav">⚙️ Administración</a>
             </nav>
 
             <div class="sidebar-footer">
@@ -30,6 +30,7 @@
         </aside>
 
         <main class="dashboard-main">
+            <div id="servicesView">
             <header class="dashboard-topbar">
                 <div>
                     <p class="topbar-eyebrow">Panel principal</p>
@@ -67,9 +68,165 @@
                                 <th>Barbero</th>
                                 <th>Precio</th>
                                 <th>Hora</th>
+                                <th>Acción</th>
                             </tr>
                         </thead>
                         <tbody id="servicesTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+            </div>
+
+            <section class="table-card" id="clientsView" hidden>
+                <div class="table-header">
+                    <div>
+                        <h2>Clientes</h2>
+                        <p>Registra y consulta la información de cada cliente.</p>
+                    </div>
+                </div>
+
+                <form id="clientForm" class="dashboard-form">
+                    <div class="field-grid">
+                        <label>
+                            Nombre completo
+                            <input name="fullName" type="text" placeholder="Ej. Juan Pérez" required>
+                        </label>
+                        <label>
+                            Número de cédula
+                            <input name="identityNumber" type="text" inputmode="numeric" placeholder="Ej. 1234567890" required>
+                        </label>
+                        <label>
+                            Número telefónico
+                            <input name="phone" type="tel" placeholder="Ej. 3001234567" required>
+                        </label>
+                        <label>
+                            Fecha de nacimiento
+                            <input name="birthDate" type="date" required>
+                        </label>
+                        <label>
+                            Correo electrónico
+                            <input name="email" type="email" placeholder="Ej. juan@correo.com" required>
+                        </label>
+                    </div>
+                    <button type="submit" class="primary-btn" id="clientSubmitButton">+ Agregar cliente</button>
+                    <button type="button" class="secondary-btn" id="clientCancelButton" hidden>Cancelar edición</button>
+                    <p id="clientMessage" class="form-message" aria-live="polite"></p>
+                </form>
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Cédula</th>
+                                <th>Teléfono</th>
+                                <th>Fecha de nacimiento</th>
+                                <th>Correo</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="clientsTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="table-card" id="barbersView" hidden>
+                <div class="table-header">
+                    <div>
+                        <h2>Barberos</h2>
+                        <p>Registra y consulta la información de cada barbero.</p>
+                    </div>
+                </div>
+
+                <form id="barberForm" class="dashboard-form">
+                    <div class="field-grid">
+                        <label>
+                            Nombre completo
+                            <input name="fullName" type="text" placeholder="Ej. Mateo Rodríguez" required>
+                        </label>
+                        <label>
+                            Cédula
+                            <input name="identityNumber" type="text" inputmode="numeric" placeholder="Ej. 1234567890" required>
+                        </label>
+                        <label>
+                            Nombre de usuario
+                            <input name="username" type="text" placeholder="Ej. mateo.rodriguez" required>
+                        </label>
+                        <label>
+                            Fecha de nacimiento
+                            <input name="birthDate" type="date" required>
+                        </label>
+                        <label>
+                            Número telefónico
+                            <input name="phone" type="tel" placeholder="Ej. 3001234567" required>
+                        </label>
+                        <label>
+                            Correo electrónico
+                            <input name="email" type="email" placeholder="Ej. mateo@barber.com" required>
+                        </label>
+                        <label>
+                            Comisión por corte (%)
+                            <input name="commission" type="number" min="0" max="100" step="0.01" placeholder="Ej. 40" required>
+                        </label>
+                    </div>
+                    <button type="submit" class="primary-btn" id="barberSubmitButton">+ Agregar barbero</button>
+                    <button type="button" class="secondary-btn" id="barberCancelButton" hidden>Cancelar edición</button>
+                    <p id="barberMessage" class="form-message" aria-live="polite"></p>
+                </form>
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Cédula</th>
+                                <th>Usuario</th>
+                                <th>Fecha de nacimiento</th>
+                                <th>Teléfono</th>
+                                <th>Correo</th>
+                                <th>Comisión</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="barbersTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="table-card administration-panel" id="administrationView" hidden>
+                <div class="table-header">
+                    <div>
+                        <h2>Administración</h2>
+                        <p>Configura los servicios y precios disponibles para el registro.</p>
+                    </div>
+                </div>
+
+                <form id="catalogForm" class="catalog-form">
+                    <div class="field-grid">
+                        <label>
+                            Nombre del servicio
+                            <input name="name" type="text" placeholder="Ej. Corte clásico" required>
+                        </label>
+                        <label>
+                            Precio
+                            <input name="price" type="number" min="0" step="0.01" placeholder="Ej. 25000" required>
+                        </label>
+                    </div>
+                    <button type="submit" class="primary-btn" id="catalogSubmitButton">+ Agregar al catálogo</button>
+                    <button type="button" class="secondary-btn" id="catalogCancelButton" hidden>Cancelar edición</button>
+                    <p id="catalogMessage" class="form-message" aria-live="polite"></p>
+                </form>
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Servicio</th>
+                                <th>Precio</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="catalogTableBody"></tbody>
                     </table>
                 </div>
             </section>
@@ -87,144 +244,36 @@
                 <div class="field-grid">
                     <label>
                         Nombre del servicio
-                        <input name="name" type="text" placeholder="Ej. Corte clásico" required>
+                        <select name="name" id="serviceSelect" required>
+                            <option value="">Selecciona un servicio</option>
+                        </select>
                     </label>
                     <label>
                         Cliente
-                        <input name="client" type="text" placeholder="Ej. Juan Pérez" required>
+                        <select name="client" id="clientSelect" required>
+                            <option value="">Selecciona un cliente</option>
+                        </select>
                     </label>
                     <label>
                         Barbero
-                        <input name="barber" type="text" placeholder="Ej. Mateo" required>
+                        <select name="barber" id="barberSelect" required>
+                            <option value="">Selecciona un barbero</option>
+                        </select>
                     </label>
                     <label>
                         Precio
-                        <input name="price" type="number" min="0" step="0.01" placeholder="Ej. 25000" required>
+                        <input name="price" id="servicePrice" type="number" readonly required>
                     </label>
                 </div>
 
                 <div class="modal-actions">
                     <button type="button" id="cancelServiceModal" class="secondary-btn">Cancelar</button>
-                    <button type="submit" class="primary-btn">Guardar servicio</button>
+                    <button type="submit" class="primary-btn" id="serviceSubmitButton">Guardar servicio</button>
                 </div>
             </form>
         </div>
     </div>
 
     <script src="logic.js"></script>
-    <script>
-        (function () {
-            const servicesKey = 'barberConnectionServices';
-            const modal = document.getElementById('serviceModal');
-            const openButton = document.getElementById('openServiceModal');
-            const closeButton = document.getElementById('closeServiceModal');
-            const cancelButton = document.getElementById('cancelServiceModal');
-            const serviceForm = document.getElementById('serviceForm');
-            const servicesTableBody = document.getElementById('servicesTableBody');
-            const serviceCount = document.getElementById('serviceCount');
-            const lastServiceTime = document.getElementById('lastServiceTime');
-            const userName = document.getElementById('userName');
-
-            const currentUser = window.BarberAuth?.getCurrentUser?.();
-            if (userName) {
-                userName.textContent = currentUser?.name || 'Invitado';
-            }
-
-            function getServices() {
-                try {
-                    return JSON.parse(localStorage.getItem(servicesKey)) || [];
-                } catch (error) {
-                    console.error('No se pudieron leer los servicios', error);
-                    return [];
-                }
-            }
-
-            function saveServices(services) {
-                localStorage.setItem(servicesKey, JSON.stringify(services));
-            }
-
-            function formatPrice(value) {
-                return new Intl.NumberFormat('es-CO', {
-                    style: 'currency',
-                    currency: 'COP',
-                    maximumFractionDigits: 0
-                }).format(Number(value));
-            }
-
-            function formatDateTime(value) {
-                const date = new Date(value);
-                return date.toLocaleString('es-ES', {
-                    day: '2-digit',
-                    month: '2-digit',
-                    year: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-            }
-
-            function renderServices() {
-                const services = getServices();
-                serviceCount.textContent = services.length;
-                lastServiceTime.textContent = services.length ? formatDateTime(services[0].registeredAt) : '--:--';
-                servicesTableBody.innerHTML = '';
-
-                if (!services.length) {
-                    servicesTableBody.innerHTML = '<tr><td colspan="5" class="empty-state">Aún no hay servicios registrados.</td></tr>';
-                    return;
-                }
-
-                services.forEach((service) => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${service.name}</td>
-                        <td>${service.client}</td>
-                        <td>${service.barber}</td>
-                        <td>${formatPrice(service.price)}</td>
-                        <td>${formatDateTime(service.registeredAt)}</td>
-                    `;
-                    servicesTableBody.appendChild(row);
-                });
-            }
-
-            function openModal() {
-                modal.style.display = 'grid';
-            }
-
-            function closeModal() {
-                modal.style.display = 'none';
-                serviceForm.reset();
-            }
-
-            openButton.addEventListener('click', openModal);
-            closeButton.addEventListener('click', closeModal);
-            cancelButton.addEventListener('click', closeModal);
-
-            modal.addEventListener('click', (event) => {
-                if (event.target === modal) {
-                    closeModal();
-                }
-            });
-
-            serviceForm.addEventListener('submit', (event) => {
-                event.preventDefault();
-
-                const formData = new FormData(serviceForm);
-                const service = Object.fromEntries(formData.entries());
-                const services = getServices();
-
-                services.unshift({
-                    ...service,
-                    price: Number(service.price),
-                    registeredAt: new Date().toISOString()
-                });
-
-                saveServices(services);
-                renderServices();
-                closeModal();
-            });
-
-            renderServices();
-        })();
-    </script>
 </body>
 </html>
