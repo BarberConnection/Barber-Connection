@@ -196,6 +196,8 @@
     }
 
     function initializeDashboardPage() {
+        const dashboardView = document.getElementById('dashboardView');
+        const liquidationView = document.getElementById('liquidationView');
         const servicesView = document.getElementById('servicesView');
         if (!servicesView) {
             return;
@@ -205,10 +207,12 @@
         const catalogKey = 'barberConnectionServiceCatalog';
         const barbersKey = 'barberConnectionBarbers';
         const clientsKey = 'barberConnectionClients';
+        const liquidationsKey = 'barberConnectionLiquidations';
         const modal = document.getElementById('serviceModal');
         const openButton = document.getElementById('openServiceModal');
         const closeButton = document.getElementById('closeServiceModal');
         const cancelButton = document.getElementById('cancelServiceModal');
+        const accordionButtons = document.querySelectorAll('.accordion-toggle');
         const serviceForm = document.getElementById('serviceForm');
         const servicesTableBody = document.getElementById('servicesTableBody');
         const serviceCount = document.getElementById('serviceCount');
@@ -216,18 +220,23 @@
         const userName = document.getElementById('userName');
         const serviceSelect = document.getElementById('serviceSelect');
         const servicePrice = document.getElementById('servicePrice');
-        const clientSelect = document.getElementById('clientSelect');
+        const clientIdentityNumber = document.getElementById('clientIdentityNumber');
+        const clientIdentityOptions = document.getElementById('clientIdentityOptions');
+        const clientLookupMessage = document.getElementById('clientLookupMessage');
+        const openClientFromService = document.getElementById('openClientFromService');
         const serviceSubmitButton = document.getElementById('serviceSubmitButton');
         const catalogForm = document.getElementById('catalogForm');
         const catalogTableBody = document.getElementById('catalogTableBody');
         const catalogMessage = document.getElementById('catalogMessage');
         const catalogSubmitButton = document.getElementById('catalogSubmitButton');
         const catalogCancelButton = document.getElementById('catalogCancelButton');
+        const dashboardNav = document.getElementById('dashboardNav');
+        const liquidationNav = document.getElementById('liquidationNav');
+        const pendingLiquidations = document.getElementById('pendingLiquidations');
+        const liquidationHistory = document.getElementById('liquidationHistory');
         const administrationView = document.getElementById('administrationView');
         const administrationNav = document.getElementById('administrationNav');
-        const barbersView = document.getElementById('barbersView');
-        const servicesNav = document.querySelector('.nav-item.active');
-        const barbersNav = document.getElementById('barbersNav');
+        const servicesNav = document.getElementById('servicesNav');
         const barberForm = document.getElementById('barberForm');
         const barberMessage = document.getElementById('barberMessage');
         const barbersTableBody = document.getElementById('barbersTableBody');
@@ -280,6 +289,10 @@
             return readStorage(clientsKey, 'No se pudo leer el registro de clientes');
         }
 
+        function getLiquidations() {
+            return readStorage(liquidationsKey, 'No se pudo leer el historial de liquidaciones');
+        }
+
         function formatPrice(value) {
             return new Intl.NumberFormat('es-CO', {
                 style: 'currency',
@@ -324,11 +337,11 @@
             const barbers = getBarbers();
             barbersTableBody.innerHTML = '';
             if (!barbers.length) {
-                barbersTableBody.innerHTML = '<tr><td colspan="8" class="empty-state">Aún no hay barberos registrados.</td></tr>';
+                barbersTableBody.innerHTML = '<tr><td colspan="11" class="empty-state">Aún no hay barberos registrados.</td></tr>';
             } else {
                 barbers.forEach((barber) => {
                     const row = document.createElement('tr');
-                    row.innerHTML = `<td>${barber.fullName}</td><td>${barber.identityNumber}</td><td>${barber.username}</td><td>${barber.birthDate}</td><td>${barber.phone}</td><td>${barber.email}</td><td>${barber.commission}%</td><td><button type="button" class="secondary-btn barber-edit" data-id="${barber.id}">Editar</button> <button type="button" class="secondary-btn barber-delete" data-id="${barber.id}">Eliminar</button></td>`;
+                    row.innerHTML = `<td>${barber.fullName}</td><td>${barber.identityNumber}</td><td>${barber.username}</td><td>${barber.birthDate}</td><td>${barber.phone}</td><td>${barber.email}</td><td>${barber.commission}%</td><td>${barber.bankName || 'No registrado'}</td><td>${barber.accountType || 'No registrada'}</td><td>${barber.accountNumber || 'No registrada'}</td><td><button type="button" class="secondary-btn barber-edit" data-id="${barber.id}">Editar</button> <button type="button" class="secondary-btn barber-delete" data-id="${barber.id}">Eliminar</button></td>`;
                     barbersTableBody.appendChild(row);
                 });
             }
@@ -339,6 +352,108 @@
                 option.value = barber.fullName;
                 option.textContent = barber.fullName;
                 barberSelect.appendChild(option);
+            });
+        }
+
+        function renderLiquidation() {
+            const barbers = getBarbers();
+            const services = getServices();
+            const history = getLiquidations();
+            const settledServiceIds = new Set(history.flatMap((item) => item.serviceIds || []));
+            pendingLiquidations.innerHTML = '';
+            liquidationHistory.innerHTML = '';
+
+            const pendingServices = services.filter((service) => {
+                const serviceId = service.id || service.registeredAt;
+                return !settledServiceIds.has(serviceId);
+            });
+            const pendingByBarber = new Map();
+            pendingServices.forEach((service) => {
+                const barber = barbers.find((item) => item.fullName === service.barber);
+                const barberKey = barber?.id || service.barber;
+                if (!pendingByBarber.has(barberKey)) {
+                    pendingByBarber.set(barberKey, { barber, services: [] });
+                }
+                pendingByBarber.get(barberKey).services.push(service);
+            });
+
+            if (!pendingByBarber.size) {
+                pendingLiquidations.innerHTML = '<p class="empty-state">No hay liquidaciones pendientes.</p>';
+            } else {
+                pendingByBarber.forEach(({ barber, services: barberServices }) => {
+                    const fallbackBarber = barber || {
+                        id: barberServices[0].barber,
+                        fullName: barberServices[0].barber
+                    };
+                    const totalIncome = barberServices.reduce((sum, service) => sum + Number(service.price || 0), 0);
+                    const serviceIds = barberServices.map((service) => service.id || service.registeredAt);
+                    pendingLiquidations.appendChild(createLiquidationCard({ ...fallbackBarber, serviceIds }, totalIncome, false));
+                });
+            }
+
+            if (!history.length) {
+                liquidationHistory.innerHTML = '<p class="empty-state">Aún no hay liquidaciones en el historial.</p>';
+            } else {
+                history.slice().reverse().forEach((liquidation) => {
+                    liquidationHistory.appendChild(createLiquidationCard(liquidation, liquidation.totalIncome, true));
+                });
+            }
+        }
+
+        function createLiquidationCard(item, totalIncome, isHistory) {
+            const card = document.createElement('article');
+            card.className = 'liquidation-card';
+            const cutoffDate = item.cutoffDate || new Date().toISOString().slice(0, 10);
+            card.innerHTML = `
+                <div class="liquidation-card-header">
+                    <div>
+                        <h3>${item.fullName}</h3>
+                        <p>${isHistory ? 'Liquidación completada' : 'Liquidación pendiente'}</p>
+                    </div>
+                    <strong>${formatCurrency(totalIncome)}</strong>
+                </div>
+                <div class="liquidation-card-details">
+                    <span><b>Banco:</b> ${item.bankName || 'No registrado'}</span>
+                    <span><b>Cuenta:</b> ${item.accountType || 'No registrada'} · ${item.accountNumber || 'No registrada'}</span>
+                    <label class="cutoff-date">
+                        Fecha de corte
+                        <input type="date" value="${cutoffDate}" ${isHistory ? 'disabled' : ''}>
+                    </label>
+                </div>
+                ${isHistory ? `<span class="liquidation-status">Liquidada el ${formatDate(item.settledAt || cutoffDate)}</span>` : `
+                    <label class="liquidation-check">
+                        <input type="checkbox" data-barber-id="${item.id}">
+                        <span>Marcar como liquidada</span>
+                    </label>
+                `}
+            `;
+
+            if (!isHistory) {
+                const checkbox = card.querySelector('input[type="checkbox"]');
+                const dateInput = card.querySelector('input[type="date"]');
+                checkbox.addEventListener('change', () => {
+                    if (!checkbox.checked) return;
+                    const liquidations = getLiquidations();
+                    liquidations.push({
+                        ...item,
+                        totalIncome,
+                        serviceIds: item.serviceIds || [],
+                        cutoffDate: dateInput.value,
+                        settledAt: new Date().toISOString()
+                    });
+                    writeStorage(liquidationsKey, liquidations);
+                    renderLiquidation();
+                });
+            }
+
+            return card;
+        }
+
+        function formatDate(value) {
+            return new Date(`${value}T00:00:00`).toLocaleDateString('es-ES', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
             });
         }
 
@@ -355,13 +470,27 @@
                 });
             }
 
-            clientSelect.innerHTML = '<option value="">Selecciona un cliente</option>';
+            clientIdentityOptions.innerHTML = '';
             clients.forEach((client) => {
                 const option = document.createElement('option');
-                option.value = client.fullName;
-                option.textContent = client.fullName;
-                clientSelect.appendChild(option);
+                option.value = client.identityNumber;
+                option.label = client.fullName;
+                clientIdentityOptions.appendChild(option);
             });
+        }
+
+        function updateClientLookupMessage() {
+            const identityNumber = clientIdentityNumber.value.trim();
+            const client = getClients().find((item) => item.identityNumber === identityNumber);
+            if (client) {
+                clientLookupMessage.textContent = `Cliente encontrado: ${client.fullName}`;
+                clientLookupMessage.className = 'field-hint success';
+                return;
+            }
+            clientLookupMessage.textContent = identityNumber
+                ? 'Cédula nueva. Puedes registrarla desde el botón inferior.'
+                : 'Puedes escribir una cédula nueva o seleccionar una registrada.';
+            clientLookupMessage.className = 'field-hint';
         }
 
         function renderServices() {
@@ -376,9 +505,123 @@
 
             services.forEach((service) => {
                 const row = document.createElement('tr');
-                row.innerHTML = `<td>${service.name}</td><td>${service.client}</td><td>${service.barber}</td><td>${formatPrice(service.price)}</td><td>${formatDateTime(service.registeredAt)}</td><td><button type="button" class="secondary-btn service-edit" data-id="${service.id || service.registeredAt}">Editar</button></td>`;
+                row.innerHTML = `<td>${service.name}</td><td>${service.clientName || service.client || 'Sin identificar'}<br><small>${service.clientIdentityNumber || ''}</small></td><td>${service.barber}</td><td>${formatPrice(service.price)}</td><td>${formatDateTime(service.registeredAt)}</td><td><button type="button" class="secondary-btn service-edit" data-id="${service.id || service.registeredAt}">Editar</button></td>`;
                 servicesTableBody.appendChild(row);
             });
+        }
+
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('es-CO', {
+                style: 'currency',
+                currency: 'COP',
+                maximumFractionDigits: 0
+            }).format(Number(value || 0));
+        }
+
+        function getLastSevenDays() {
+            const days = [];
+            const today = new Date();
+            for (let index = 6; index >= 0; index -= 1) {
+                const date = new Date(today);
+                date.setDate(today.getDate() - index);
+                days.push({
+                    key: date.toISOString().slice(0, 10),
+                    label: date.toLocaleDateString('es-ES', { weekday: 'short' })
+                });
+            }
+            return days;
+        }
+
+        function renderDashboardStats() {
+            const services = getServices();
+            const days = getLastSevenDays();
+            const incomeByDay = days.map((day) => {
+                const total = services
+                    .filter((service) => service.registeredAt && service.registeredAt.slice(0, 10) === day.key)
+                    .reduce((sum, service) => sum + Number(service.price || 0), 0);
+                return { ...day, total };
+            });
+
+            const grossIncome = incomeByDay.reduce((sum, day) => sum + day.total, 0);
+            const currentWeekCuts = services.filter((service) => {
+                const registeredAt = service.registeredAt ? new Date(service.registeredAt) : null;
+                if (!registeredAt || Number.isNaN(registeredAt.getTime())) return false;
+                const now = new Date();
+                const diffDays = Math.floor((now - registeredAt) / 86400000);
+                return diffDays >= 0 && diffDays <= 6;
+            }).length;
+
+            const previousWeekStart = new Date();
+            previousWeekStart.setDate(previousWeekStart.getDate() - 13);
+            const previousWeekEnd = new Date();
+            previousWeekEnd.setDate(previousWeekEnd.getDate() - 7);
+            const previousWeekServices = services.filter((service) => {
+                const registeredAt = service.registeredAt ? new Date(service.registeredAt) : null;
+                if (!registeredAt || Number.isNaN(registeredAt.getTime())) return false;
+                return registeredAt >= previousWeekStart && registeredAt <= previousWeekEnd;
+            });
+
+            const previousWeekGross = previousWeekServices.reduce((sum, service) => sum + Number(service.price || 0), 0);
+            const previousWeekCuts = previousWeekServices.length;
+            const netIncome = grossIncome * 0.75;
+            const previousWeekNet = previousWeekGross * 0.75;
+            const growth = previousWeekGross > 0 ? ((grossIncome - previousWeekGross) / previousWeekGross) * 100 : 0;
+
+            const grossIncomeValue = document.getElementById('grossIncomeValue');
+            const grossIncomeTrend = document.getElementById('grossIncomeTrend');
+            const netIncomeValue = document.getElementById('netIncomeValue');
+            const netIncomeTrend = document.getElementById('netIncomeTrend');
+            const weeklyCutsValue = document.getElementById('weeklyCutsValue');
+            const weeklyCutsTrend = document.getElementById('weeklyCutsTrend');
+            const growthWeekValue = document.getElementById('growthWeekValue');
+            const growthWeekLabel = document.getElementById('growthWeekLabel');
+
+            grossIncomeValue.textContent = formatCurrency(grossIncome);
+            grossIncomeTrend.textContent = `${growth >= 0 ? '+' : ''}${growth.toFixed(1)}%`;
+            grossIncomeTrend.classList.toggle('positive', growth >= 0);
+            grossIncomeTrend.classList.toggle('negative', growth < 0);
+
+            netIncomeValue.textContent = formatCurrency(netIncome);
+            const netGrowth = previousWeekNet > 0 ? ((netIncome - previousWeekNet) / previousWeekNet) * 100 : 0;
+            netIncomeTrend.textContent = `${netGrowth >= 0 ? '+' : ''}${netGrowth.toFixed(1)}%`;
+            netIncomeTrend.classList.toggle('positive', netGrowth >= 0);
+            netIncomeTrend.classList.toggle('negative', netGrowth < 0);
+
+            weeklyCutsValue.textContent = String(currentWeekCuts);
+            const cutsGrowth = previousWeekCuts > 0 ? ((currentWeekCuts - previousWeekCuts) / previousWeekCuts) * 100 : 0;
+            weeklyCutsTrend.textContent = `${cutsGrowth >= 0 ? '+' : ''}${cutsGrowth.toFixed(1)}%`;
+            weeklyCutsTrend.classList.toggle('positive', cutsGrowth >= 0);
+            weeklyCutsTrend.classList.toggle('negative', cutsGrowth < 0);
+
+            growthWeekValue.textContent = `${growth >= 0 ? '+' : ''}${growth.toFixed(1)}%`;
+            growthWeekLabel.textContent = previousWeekGross > 0 ? 'Respecto a la semana anterior' : 'Sin comparación previa';
+
+            const incomeChart = document.getElementById('weeklyIncomeChart');
+            const cutsChart = document.getElementById('weeklyCutsChart');
+            const maxIncome = Math.max(...incomeByDay.map((day) => day.total), 1);
+            const maxCuts = Math.max(...incomeByDay.map((day) => {
+                const dayServices = services.filter((service) => service.registeredAt && service.registeredAt.slice(0, 10) === day.key);
+                return dayServices.length;
+            }), 1);
+
+            incomeChart.innerHTML = incomeByDay.map((day) => `
+                <div class="chart-bar-wrap">
+                    <small>${formatCurrency(day.total)}</small>
+                    <span class="chart-bar" style="height: ${(day.total / maxIncome) * 100}%"></span>
+                    <span>${day.label.slice(0, 3)}</span>
+                </div>
+            `).join('');
+
+            cutsChart.innerHTML = incomeByDay.map((day) => {
+                const dayCuts = services.filter((service) => service.registeredAt && service.registeredAt.slice(0, 10) === day.key).length;
+                return `
+                    <div class="chart-bar-wrap">
+                        <small>${dayCuts}</small>
+                        <span class="chart-bar accent" style="height: ${(dayCuts / maxCuts) * 100}%"></span>
+                        <span>${day.label.slice(0, 3)}</span>
+                    </div>
+                `;
+            }).join('');
         }
 
         function closeModal() {
@@ -391,50 +634,84 @@
 
         function showAdministration() {
             servicesView.hidden = true;
+            dashboardView.hidden = true;
+            liquidationView.hidden = true;
             clientsView.hidden = true;
-            barbersView.hidden = true;
             administrationView.hidden = false;
+            dashboardNav.classList.remove('active');
+            liquidationNav.classList.remove('active');
             servicesNav.classList.remove('active');
-            barbersNav.classList.remove('active');
             clientsNav.classList.remove('active');
             administrationNav.classList.add('active');
             renderCatalog();
-        }
-
-        function showBarbers() {
-            servicesView.hidden = true;
-            clientsView.hidden = true;
-            administrationView.hidden = true;
-            barbersView.hidden = false;
-            servicesNav.classList.remove('active');
-            clientsNav.classList.remove('active');
-            administrationNav.classList.remove('active');
-            barbersNav.classList.add('active');
             renderBarbers();
         }
 
         function showClients() {
             servicesView.hidden = true;
-            barbersView.hidden = true;
+            dashboardView.hidden = true;
+            liquidationView.hidden = true;
             administrationView.hidden = true;
             clientsView.hidden = false;
+            dashboardNav.classList.remove('active');
+            liquidationNav.classList.remove('active');
             servicesNav.classList.remove('active');
-            barbersNav.classList.remove('active');
             administrationNav.classList.remove('active');
             clientsNav.classList.add('active');
             renderClients();
         }
 
+        function showLiquidation() {
+            servicesView.hidden = true;
+            dashboardView.hidden = true;
+            clientsView.hidden = true;
+            administrationView.hidden = true;
+            liquidationView.hidden = false;
+            dashboardNav.classList.remove('active');
+            liquidationNav.classList.add('active');
+            servicesNav.classList.remove('active');
+            clientsNav.classList.remove('active');
+            administrationNav.classList.remove('active');
+            renderLiquidation();
+        }
+
+        function showDashboard() {
+            servicesView.hidden = true;
+            clientsView.hidden = true;
+            liquidationView.hidden = true;
+            administrationView.hidden = true;
+            dashboardView.hidden = false;
+            dashboardNav.classList.add('active');
+            liquidationNav.classList.remove('active');
+            servicesNav.classList.remove('active');
+            clientsNav.classList.remove('active');
+            administrationNav.classList.remove('active');
+            renderDashboardStats();
+        }
+
         function showServices() {
             servicesView.hidden = false;
+            dashboardView.hidden = true;
+            liquidationView.hidden = true;
             clientsView.hidden = true;
-            barbersView.hidden = true;
             administrationView.hidden = true;
+            dashboardNav.classList.remove('active');
+            liquidationNav.classList.remove('active');
             servicesNav.classList.add('active');
-            barbersNav.classList.remove('active');
             clientsNav.classList.remove('active');
             administrationNav.classList.remove('active');
         }
+
+        accordionButtons.forEach((button) => {
+            const target = document.getElementById(button.dataset.target);
+            if (!target) return;
+            button.setAttribute('aria-expanded', String(!target.hidden));
+            button.addEventListener('click', () => {
+                const isHidden = target.hidden;
+                target.hidden = !isHidden;
+                button.setAttribute('aria-expanded', String(isHidden));
+            });
+        });
 
         openButton.addEventListener('click', () => {
             modal.style.display = 'grid';
@@ -445,9 +722,19 @@
             const selectedItem = getCatalog().find((item) => item.name === serviceSelect.value);
             servicePrice.value = selectedItem ? selectedItem.price : '';
         });
-        barbersNav.addEventListener('click', (event) => {
+        clientIdentityNumber.addEventListener('input', updateClientLookupMessage);
+        openClientFromService.addEventListener('click', () => {
+            closeModal();
+            showClients();
+            clientForm.elements.identityNumber.focus();
+        });
+        liquidationNav.addEventListener('click', (event) => {
             event.preventDefault();
-            showBarbers();
+            showLiquidation();
+        });
+        dashboardNav.addEventListener('click', (event) => {
+            event.preventDefault();
+            showDashboard();
         });
         clientsNav.addEventListener('click', (event) => {
             event.preventDefault();
@@ -699,6 +986,11 @@
         serviceForm.addEventListener('submit', (event) => {
             event.preventDefault();
             const service = Object.fromEntries(new FormData(serviceForm).entries());
+            const clientIdentity = service.clientIdentityNumber.trim();
+            const registeredClient = getClients().find((client) => client.identityNumber === clientIdentity);
+            service.clientIdentityNumber = clientIdentity;
+            service.clientName = registeredClient ? registeredClient.fullName : 'Cliente no registrado';
+            service.client = clientIdentity;
             const services = getServices();
             if (editingServiceId) {
                 const serviceIndex = services.findIndex((item) => item.id === editingServiceId || item.registeredAt === editingServiceId);
@@ -741,16 +1033,10 @@
                 option.textContent = service.barber;
                 barberSelect.appendChild(option);
             }
-            if (!Array.from(clientSelect.options).some((option) => option.value === service.client)) {
-                const option = document.createElement('option');
-                option.value = service.client;
-                option.textContent = service.client;
-                clientSelect.appendChild(option);
-            }
-
             serviceSelect.value = service.name;
             barberSelect.value = service.barber;
-            clientSelect.value = service.client;
+            clientIdentityNumber.value = service.clientIdentityNumber || service.client || '';
+            updateClientLookupMessage();
             servicePrice.value = service.price;
             editingServiceId = service.id || service.registeredAt;
             serviceSubmitButton.textContent = 'Guardar cambios';

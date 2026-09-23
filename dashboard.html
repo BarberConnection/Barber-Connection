@@ -18,10 +18,11 @@
             </div>
 
             <nav class="sidebar-nav">
+                <a href="#dashboard" class="nav-item" id="dashboardNav">📊 Dashboard</a>
+                <a href="#" class="nav-item active" id="servicesNav">🛎️ Servicios</a>
+                <a href="#liquidacion" class="nav-item" id="liquidationNav">💸 Liquidación</a>
                 <a href="#clientes" class="nav-item" id="clientsNav">👥 Clientes</a>
-                <a href="#barberos" class="nav-item" id="barbersNav">✂️ Barberos</a>
-                <a href="#" class="nav-item active">🛎️ Servicios</a>
-                <a href="#administracion" class="nav-item" id="administrationNav">⚙️ Administración</a>
+                <a href="#administracion" class="nav-item" id="administrationNav">⚙️ Administrador</a>
             </nav>
 
             <div class="sidebar-footer">
@@ -30,6 +31,82 @@
         </aside>
 
         <main class="dashboard-main">
+            <section class="table-card liquidation-panel" id="liquidationView" hidden>
+                <div class="table-header">
+                    <div>
+                        <h2>Liquidación</h2>
+                        <p>Organiza las liquidaciones pendientes y conserva su historial.</p>
+                    </div>
+                </div>
+
+                <div class="accordion-block">
+                    <button type="button" class="accordion-toggle" data-target="pendingLiquidationsPanel">
+                        <span>Por liquidar</span>
+                        <span class="accordion-icon">▾</span>
+                    </button>
+                    <div id="pendingLiquidationsPanel" class="accordion-panel">
+                        <div id="pendingLiquidations" class="liquidation-cards"></div>
+                    </div>
+                </div>
+
+                <div class="accordion-block">
+                    <button type="button" class="accordion-toggle" data-target="liquidationHistoryPanel">
+                        <span>Historial</span>
+                        <span class="accordion-icon">▾</span>
+                    </button>
+                    <div id="liquidationHistoryPanel" class="accordion-panel" hidden>
+                        <div id="liquidationHistory" class="liquidation-cards"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="table-card dashboard-panel" id="dashboardView" hidden>
+                <div class="table-header">
+                    <div>
+                        <h2>Dashboard</h2>
+                        <p>Resumen de ingresos y operación de la última semana.</p>
+                    </div>
+                </div>
+
+                <div class="dashboard-kpis">
+                    <article class="metric-card metric-card-primary">
+                        <span class="metric-label">Ingreso generado esta semana</span>
+                        <strong id="grossIncomeValue">$0</strong>
+                        <small id="grossIncomeTrend" class="metric-trend">0%</small>
+                    </article>
+
+                    <article class="metric-card">
+                        <span class="metric-label">Ingreso neto semanal</span>
+                        <strong id="netIncomeValue">$0</strong>
+                        <small id="netIncomeTrend" class="metric-trend">0%</small>
+                    </article>
+
+                    <article class="metric-card">
+                        <span class="metric-label">Número de cortes</span>
+                        <strong id="weeklyCutsValue">0</strong>
+                        <small id="weeklyCutsTrend" class="metric-trend">0%</small>
+                    </article>
+
+                    <article class="metric-card">
+                        <span class="metric-label">Crecimiento vs. semana anterior</span>
+                        <strong id="growthWeekValue">0%</strong>
+                        <small id="growthWeekLabel" class="metric-subtext">Sin comparación previa</small>
+                    </article>
+                </div>
+
+                <div class="chart-grid">
+                    <article class="chart-card">
+                        <h3>Ingresos por día</h3>
+                        <div id="weeklyIncomeChart" class="chart-bars" aria-label="Gráfico de ingresos semanales"></div>
+                    </article>
+
+                    <article class="chart-card">
+                        <h3>Cortes por día</h3>
+                        <div id="weeklyCutsChart" class="chart-bars chart-bars-compact" aria-label="Gráfico de cortes semanales"></div>
+                    </article>
+                </div>
+            </section>
+
             <div id="servicesView">
             <header class="dashboard-topbar">
                 <div>
@@ -130,69 +207,6 @@
                 </div>
             </section>
 
-            <section class="table-card" id="barbersView" hidden>
-                <div class="table-header">
-                    <div>
-                        <h2>Barberos</h2>
-                        <p>Registra y consulta la información de cada barbero.</p>
-                    </div>
-                </div>
-
-                <form id="barberForm" class="dashboard-form">
-                    <div class="field-grid">
-                        <label>
-                            Nombre completo
-                            <input name="fullName" type="text" placeholder="Ej. Mateo Rodríguez" required>
-                        </label>
-                        <label>
-                            Cédula
-                            <input name="identityNumber" type="text" inputmode="numeric" placeholder="Ej. 1234567890" required>
-                        </label>
-                        <label>
-                            Nombre de usuario
-                            <input name="username" type="text" placeholder="Ej. mateo.rodriguez" required>
-                        </label>
-                        <label>
-                            Fecha de nacimiento
-                            <input name="birthDate" type="date" required>
-                        </label>
-                        <label>
-                            Número telefónico
-                            <input name="phone" type="tel" placeholder="Ej. 3001234567" required>
-                        </label>
-                        <label>
-                            Correo electrónico
-                            <input name="email" type="email" placeholder="Ej. mateo@barber.com" required>
-                        </label>
-                        <label>
-                            Comisión por corte (%)
-                            <input name="commission" type="number" min="0" max="100" step="0.01" placeholder="Ej. 40" required>
-                        </label>
-                    </div>
-                    <button type="submit" class="primary-btn" id="barberSubmitButton">+ Agregar barbero</button>
-                    <button type="button" class="secondary-btn" id="barberCancelButton" hidden>Cancelar edición</button>
-                    <p id="barberMessage" class="form-message" aria-live="polite"></p>
-                </form>
-
-                <div class="table-wrapper">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Nombre</th>
-                                <th>Cédula</th>
-                                <th>Usuario</th>
-                                <th>Fecha de nacimiento</th>
-                                <th>Teléfono</th>
-                                <th>Correo</th>
-                                <th>Comisión</th>
-                                <th>Acción</th>
-                            </tr>
-                        </thead>
-                        <tbody id="barbersTableBody"></tbody>
-                    </table>
-                </div>
-            </section>
-
             <section class="table-card administration-panel" id="administrationView" hidden>
                 <div class="table-header">
                     <div>
@@ -201,33 +215,167 @@
                     </div>
                 </div>
 
-                <form id="catalogForm" class="catalog-form">
-                    <div class="field-grid">
-                        <label>
-                            Nombre del servicio
-                            <input name="name" type="text" placeholder="Ej. Corte clásico" required>
-                        </label>
-                        <label>
-                            Precio
-                            <input name="price" type="number" min="0" step="0.01" placeholder="Ej. 25000" required>
-                        </label>
-                    </div>
-                    <button type="submit" class="primary-btn" id="catalogSubmitButton">+ Agregar al catálogo</button>
-                    <button type="button" class="secondary-btn" id="catalogCancelButton" hidden>Cancelar edición</button>
-                    <p id="catalogMessage" class="form-message" aria-live="polite"></p>
-                </form>
+                <div class="accordion-block">
+                    <button type="button" class="accordion-toggle" data-target="catalogPanel">
+                        <span>Catálogo</span>
+                        <span class="accordion-icon">▾</span>
+                    </button>
+                    <div id="catalogPanel" class="accordion-panel">
+                        <form id="catalogForm" class="catalog-form">
+                            <div class="field-grid">
+                                <label>
+                                    Nombre del servicio
+                                    <input name="name" type="text" placeholder="Ej. Corte clásico" required>
+                                </label>
+                                <label>
+                                    Precio
+                                    <input name="price" type="number" min="0" step="0.01" placeholder="Ej. 25000" required>
+                                </label>
+                            </div>
+                            <button type="submit" class="primary-btn" id="catalogSubmitButton">+ Agregar al catálogo</button>
+                            <button type="button" class="secondary-btn" id="catalogCancelButton" hidden>Cancelar edición</button>
+                            <p id="catalogMessage" class="form-message" aria-live="polite"></p>
+                        </form>
 
-                <div class="table-wrapper">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Servicio</th>
-                                <th>Precio</th>
-                                <th>Acción</th>
-                            </tr>
-                        </thead>
-                        <tbody id="catalogTableBody"></tbody>
-                    </table>
+                        <div class="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Servicio</th>
+                                        <th>Precio</th>
+                                        <th>Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="catalogTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-block">
+                    <button type="button" class="accordion-toggle" data-target="barbersPanel">
+                        <span>Barberos</span>
+                        <span class="accordion-icon">▾</span>
+                    </button>
+                    <div id="barbersPanel" class="accordion-panel" hidden>
+                        <form id="barberForm" class="dashboard-form">
+                            <div class="field-grid">
+                                <label>
+                                    Nombre completo
+                                    <input name="fullName" type="text" placeholder="Ej. Mateo Rodríguez" required>
+                                </label>
+                                <label>
+                                    Cédula
+                                    <input name="identityNumber" type="text" inputmode="numeric" placeholder="Ej. 1234567890" required>
+                                </label>
+                                <label>
+                                    Nombre de usuario
+                                    <input name="username" type="text" placeholder="Ej. mateo.rodriguez" required>
+                                </label>
+                                <label>
+                                    Fecha de nacimiento
+                                    <input name="birthDate" type="date" required>
+                                </label>
+                                <label>
+                                    Número telefónico
+                                    <input name="phone" type="tel" placeholder="Ej. 3001234567" required>
+                                </label>
+                                <label>
+                                    Correo electrónico
+                                    <input name="email" type="email" placeholder="Ej. mateo@barber.com" required>
+                                </label>
+                                <label>
+                                    Comisión por corte (%)
+                                    <input name="commission" type="number" min="0" max="100" step="0.01" placeholder="Ej. 40" required>
+                                </label>
+                                <label>
+                                    Banco
+                                    <select name="bankName" required>
+                                        <option value="">Selecciona un banco</option>
+                                        <option value="Bancolombia">Bancolombia</option>
+                                        <option value="Banco de Bogotá">Banco de Bogotá</option>
+                                        <option value="Banco Davivienda">Banco Davivienda</option>
+                                        <option value="BBVA Colombia">BBVA Colombia</option>
+                                        <option value="Banco de Occidente">Banco de Occidente</option>
+                                        <option value="Banco Popular">Banco Popular</option>
+                                        <option value="Banco AV Villas">Banco AV Villas</option>
+                                        <option value="Banco Caja Social">Banco Caja Social</option>
+                                        <option value="Scotiabank Colpatria">Scotiabank Colpatria</option>
+                                        <option value="Itaú Colombia">Itaú Colombia</option>
+                                        <option value="Banco Falabella">Banco Falabella</option>
+                                        <option value="Banco GNB Sudameris">Banco GNB Sudameris</option>
+                                        <option value="Banco Agrario de Colombia">Banco Agrario de Colombia</option>
+                                        <option value="Bancamía">Bancamía</option>
+                                        <option value="Banco W">Banco W</option>
+                                        <option value="Banco Mundo Mujer">Banco Mundo Mujer</option>
+                                        <option value="Banco Finandina">Banco Finandina</option>
+                                        <option value="Banco Serfinanza">Banco Serfinanza</option>
+                                        <option value="Banco Pichincha">Banco Pichincha</option>
+                                        <option value="Bancoomeva">Bancoomeva</option>
+                                        <option value="Banco Cooperativo Coopcentral">Banco Cooperativo Coopcentral</option>
+                                        <option value="Banco Unión">Banco Unión</option>
+                                        <option value="Ban100">Ban100</option>
+                                        <option value="Banco Contactar">Banco Contactar</option>
+                                        <option value="Banco ProCredit">Banco ProCredit</option>
+                                        <option value="Citibank Colombia">Citibank Colombia</option>
+                                        <option value="J.P. Morgan Colombia">J.P. Morgan Colombia</option>
+                                        <option value="BTG Pactual Colombia">BTG Pactual Colombia</option>
+                                        <option value="Banco Santander Colombia">Banco Santander Colombia</option>
+                                        <option value="Lulo Bank">Lulo Bank</option>
+                                        <option value="Nu Colombia (Nubank)">Nu Colombia (Nubank)</option>
+                                        <option value="Nequi">Nequi</option>
+                                        <option value="DaviPlata">DaviPlata</option>
+                                        <option value="RappiPay">RappiPay</option>
+                                        <option value="Ualá">Ualá</option>
+                                        <option value="Pibank">Pibank</option>
+                                        <option value="dale!">dale!</option>
+                                        <option value="Movii">Movii</option>
+                                        <option value="Bold CF">Bold CF</option>
+                                        <option value="Iris">Iris</option>
+                                        <option value="Powwi">Powwi</option>
+                                        <option value="Tpaga">Tpaga</option>
+                                        <option value="KOA">KOA</option>
+                                    </select>
+                                </label>
+                                <label>
+                                    Tipo de cuenta
+                                    <select name="accountType" required>
+                                        <option value="">Selecciona</option>
+                                        <option value="Ahorros">Ahorros</option>
+                                        <option value="Corriente">Corriente</option>
+                                    </select>
+                                </label>
+                                <label>
+                                    Número de cuenta
+                                    <input name="accountNumber" type="text" placeholder="Ej. 1234567890" required>
+                                </label>
+                            </div>
+                            <button type="submit" class="primary-btn" id="barberSubmitButton">+ Agregar barbero</button>
+                            <button type="button" class="secondary-btn" id="barberCancelButton" hidden>Cancelar edición</button>
+                            <p id="barberMessage" class="form-message" aria-live="polite"></p>
+                        </form>
+
+                        <div class="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Nombre</th>
+                                        <th>Cédula</th>
+                                        <th>Usuario</th>
+                                        <th>Fecha de nacimiento</th>
+                                        <th>Teléfono</th>
+                                        <th>Correo</th>
+                                        <th>Comisión</th>
+                                        <th>Banco</th>
+                                        <th>Tipo de cuenta</th>
+                                        <th>Número de cuenta</th>
+                                        <th>Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="barbersTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </section>
         </main>
@@ -249,10 +397,11 @@
                         </select>
                     </label>
                     <label>
-                        Cliente
-                        <select name="client" id="clientSelect">
-                            <option value="">Selecciona un cliente</option>
-                        </select>
+                        Cédula del cliente
+                        <input name="clientIdentityNumber" id="clientIdentityNumber" type="text" inputmode="numeric" list="clientIdentityOptions" placeholder="Escribe o busca una cédula" required>
+                        <datalist id="clientIdentityOptions"></datalist>
+                        <small id="clientLookupMessage" class="field-hint">Puedes escribir una cédula nueva o seleccionar una registrada.</small>
+                        <button type="button" id="openClientFromService" class="secondary-btn">+ Registrar cliente</button>
                     </label>
                     <label>
                         Barbero
