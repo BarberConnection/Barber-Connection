@@ -228,9 +228,18 @@ th{color:var(--muted);font-size:0.9rem;font-weight:600}
 .status-pill{display:inline-block;padding:6px 10px;border-radius:999px;background:rgba(17,17,17,0.08);color:var(--ink);font-size:0.82rem}
 .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:grid;place-items:center;padding:20px;z-index:50}
 .modal-card{width:min(100%,560px);background:#ffffff;border:1px solid var(--border);border-radius:18px;padding:20px;box-shadow:0 20px 50px rgba(0,0,0,0.16)}
+.service-modal-card{width:min(100%,760px);padding:18px}
 .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
 .modal-header h3{margin:0;color:var(--ink)}
 .dashboard-form{display:flex;flex-direction:column;gap:16px}
+.service-modal-card .dashboard-form{gap:12px}
+.service-modal-card .field-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.service-modal-card .field-grid label{gap:5px;font-size:.82rem;font-weight:600}
+.service-modal-card .field-grid input,.service-modal-card .field-grid select{padding:9px 10px;font-size:.9rem}
+.service-modal-card .field-hint{font-size:.72rem;line-height:1.25}
+.service-modal-card #openClientFromService{padding:7px 9px;font-size:.78rem;align-self:flex-start}
+.service-modal-card #serviceTotalPrice{background:rgba(13,125,71,.08);border-color:rgba(13,125,71,.35);font-weight:700;color:#0d7d47}
+.service-modal-card .modal-actions{margin-top:2px}
 .accordion-block{border:1px solid var(--border);border-radius:14px;background:rgba(17,17,17,0.02);overflow:hidden;margin-top:16px}
 .accordion-toggle{width:100%;display:flex;justify-content:space-between;align-items:center;border:none;background:transparent;padding:16px 18px;font-size:1rem;font-weight:700;color:var(--ink);cursor:pointer;text-align:left}
 .accordion-icon{transition:transform .2s ease}
@@ -248,6 +257,17 @@ th{color:var(--muted);font-size:0.9rem;font-weight:600}
 .liquidation-check{display:flex;align-items:center;gap:8px;color:var(--ink);font-weight:700;cursor:pointer}
 .liquidation-check input{width:17px;height:17px;accent-color:var(--accent)}
 .liquidation-status{display:inline-block;color:#0d7d47;font-size:.88rem;font-weight:700}
+.client-filters{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:18px 0}
+.client-filters label{display:flex;flex-direction:column;gap:6px;color:var(--muted);font-size:.9rem}
+.client-filters input,.client-filters select{border:1px solid var(--border);border-radius:10px;padding:10px 12px;background:#fff;color:var(--ink)}
+.client-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.client-card{background:rgba(255,255,255,0.88);border:1px solid var(--border);border-radius:14px;padding:16px;box-shadow:0 8px 22px rgba(0,0,0,0.04)}
+.client-card-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.client-card-header h3{margin:0;color:var(--ink);font-size:1rem}
+.client-card-header p{margin:4px 0 0;color:var(--muted);font-size:.88rem}
+.client-card-header strong{color:var(--ink);font-size:.9rem;white-space:nowrap}
+.client-card-details{display:grid;gap:8px;margin:16px 0;color:var(--muted);font-size:.9rem}
+.client-card-actions{display:flex;gap:8px;flex-wrap:wrap}
 .field-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .field-grid label{display:flex;flex-direction:column;gap:6px;color:var(--muted);font-size:0.95rem}
 .field-hint{font-size:.78rem;color:var(--muted);font-weight:400}
@@ -260,6 +280,7 @@ th{color:var(--muted);font-size:0.9rem;font-weight:600}
     .sidebar{border-right:none;border-bottom:1px solid rgba(255,255,255,0.08)}
     .dashboard-topbar{flex-direction:column;align-items:flex-start}
     .field-grid{grid-template-columns:1fr}
+    .service-modal-card .field-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media (max-width:600px){
     .dashboard-main{padding:14px}
@@ -267,4 +288,8 @@ th{color:var(--muted);font-size:0.9rem;font-weight:600}
     .dashboard-topbar{padding:16px}
     .liquidation-card-details{grid-template-columns:1fr}
     .liquidation-card-header{flex-direction:column;gap:8px}
+    .client-filters{grid-template-columns:1fr}
+    .service-modal-card .field-grid{grid-template-columns:1fr}
+    .service-modal-card .modal-actions{flex-direction:column-reverse}
+    .service-modal-card .modal-actions button{width:100%}
 }

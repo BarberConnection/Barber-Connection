@@ -12,8 +12,6 @@
             <div class="sidebar-brand">
                 <span class="sidebar-icon">✂️</span>
                 <div>
-                    <h2>Barber Connection</h2>
-                    <p>Gestión operativa</p>
                 </div>
             </div>
 
@@ -63,8 +61,8 @@
             <section class="table-card dashboard-panel" id="dashboardView" hidden>
                 <div class="table-header">
                     <div>
-                        <h2>Dashboard</h2>
-                        <p>Resumen de ingresos y operación de la última semana.</p>
+                        <h2 id="dashboardGreeting">Hola, Usuario</h2>
+                        <p id="dashboardDescription">Consulta tus ingresos, cortes y crecimiento de la última semana.</p>
                     </div>
                 </div>
 
@@ -136,6 +134,28 @@
                     </div>
                 </div>
 
+                <div class="client-filters">
+                    <label>
+                        Filtrar fecha del servicio
+                        <select id="serviceDateFilter">
+                            <option value="all">Todas las fechas</option>
+                            <option value="today">Hoy</option>
+                            <option value="yesterday">Ayer</option>
+                            <option value="week">Esta semana</option>
+                            <option value="month">Este mes</option>
+                            <option value="year">Este año</option>
+                            <option value="lastYear">El año pasado</option>
+                        </select>
+                    </label>
+                    <label>
+                        Ordenar servicios
+                        <select id="serviceDateOrder">
+                            <option value="desc">Más recientes primero</option>
+                            <option value="asc">Más antiguos primero</option>
+                        </select>
+                    </label>
+                </div>
+
                 <div class="table-wrapper">
                     <table>
                         <thead>
@@ -162,49 +182,65 @@
                     </div>
                 </div>
 
-                <form id="clientForm" class="dashboard-form">
-                    <div class="field-grid">
-                        <label>
-                            Nombre completo
-                            <input name="fullName" type="text" placeholder="Ej. Juan Pérez" required>
-                        </label>
-                        <label>
-                            Número de cédula
-                            <input name="identityNumber" type="text" inputmode="numeric" placeholder="Ej. 1234567890" required>
-                        </label>
-                        <label>
-                            Número telefónico
-                            <input name="phone" type="tel" placeholder="Ej. 3001234567" required>
-                        </label>
-                        <label>
-                            Fecha de nacimiento
-                            <input name="birthDate" type="date" required>
-                        </label>
-                        <label>
-                            Correo electrónico
-                            <input name="email" type="email" placeholder="Ej. juan@correo.com" required>
-                        </label>
+                <div class="accordion-block">
+                    <button type="button" class="accordion-toggle" data-target="clientFormPanel">
+                        <span>Agregar cliente</span>
+                        <span class="accordion-icon">▾</span>
+                    </button>
+                    <div id="clientFormPanel" class="accordion-panel">
+                        <form id="clientForm" class="dashboard-form">
+                            <div class="field-grid">
+                                <label>
+                                    Nombre completo
+                                    <input name="fullName" type="text" placeholder="Ej. Juan Pérez" required>
+                                </label>
+                                <label>
+                                    Número de cédula
+                                    <input name="identityNumber" type="text" inputmode="numeric" placeholder="Ej. 1234567890" required>
+                                </label>
+                                <label>
+                                    Número telefónico
+                                    <input name="phone" type="tel" placeholder="Ej. 3001234567" required>
+                                </label>
+                                <label>
+                                    Fecha de nacimiento
+                                    <input name="birthDate" type="date" required>
+                                </label>
+                                <label>
+                                    Correo electrónico
+                                    <input name="email" type="email" placeholder="Ej. juan@correo.com" required>
+                                </label>
+                            </div>
+                            <button type="submit" class="primary-btn" id="clientSubmitButton">+ Agregar cliente</button>
+                            <button type="button" class="secondary-btn" id="clientCancelButton" hidden>Cancelar edición</button>
+                            <p id="clientMessage" class="form-message" aria-live="polite"></p>
+                        </form>
                     </div>
-                    <button type="submit" class="primary-btn" id="clientSubmitButton">+ Agregar cliente</button>
-                    <button type="button" class="secondary-btn" id="clientCancelButton" hidden>Cancelar edición</button>
-                    <p id="clientMessage" class="form-message" aria-live="polite"></p>
-                </form>
-
-                <div class="table-wrapper">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Nombre</th>
-                                <th>Cédula</th>
-                                <th>Teléfono</th>
-                                <th>Fecha de nacimiento</th>
-                                <th>Correo</th>
-                                <th>Acción</th>
-                            </tr>
-                        </thead>
-                        <tbody id="clientsTableBody"></tbody>
-                    </table>
                 </div>
+
+                <div class="client-filters">
+                    <label>
+                        Filtrar última visita
+                        <select id="clientLastVisitFilter">
+                            <option value="all">Todas las fechas</option>
+                            <option value="today">Hoy</option>
+                            <option value="yesterday">Ayer</option>
+                            <option value="week">Esta semana</option>
+                            <option value="month">Este mes</option>
+                            <option value="year">Este año</option>
+                            <option value="lastYear">El año pasado</option>
+                        </select>
+                    </label>
+                    <label>
+                        Ordenar por visitas
+                        <select id="clientVisitOrder">
+                            <option value="desc">Más visitas primero</option>
+                            <option value="asc">Menos visitas primero</option>
+                        </select>
+                    </label>
+                </div>
+
+                <div id="clientsTableBody" class="client-cards"></div>
             </section>
 
             <section class="table-card administration-panel" id="administrationView" hidden>
@@ -382,7 +418,7 @@
     </div>
 
     <div class="modal-backdrop" id="serviceModal" style="display:none;">
-        <div class="modal-card">
+        <div class="modal-card service-modal-card">
             <div class="modal-header">
                 <h3>Registrar nuevo servicio</h3>
                 <button type="button" id="closeServiceModal" class="icon-btn">✕</button>
@@ -412,6 +448,20 @@
                     <label>
                         Precio
                         <input name="price" id="servicePrice" type="number" readonly required>
+                    </label>
+                    <label>
+                        Segundo servicio (opcional)
+                        <select name="secondServiceName" id="secondServiceSelect">
+                            <option value="">Sin segundo servicio</option>
+                        </select>
+                    </label>
+                    <label>
+                        Precio segundo servicio
+                        <input name="secondServicePrice" id="secondServicePrice" type="number" readonly>
+                    </label>
+                    <label>
+                        Total del servicio
+                        <input id="serviceTotalPrice" type="number" readonly>
                     </label>
                 </div>
 

@@ -197,6 +197,7 @@
 
     function initializeDashboardPage() {
         const dashboardView = document.getElementById('dashboardView');
+        const dashboardGreeting = document.getElementById('dashboardGreeting');
         const liquidationView = document.getElementById('liquidationView');
         const servicesView = document.getElementById('servicesView');
         if (!servicesView) {
@@ -215,11 +216,16 @@
         const accordionButtons = document.querySelectorAll('.accordion-toggle');
         const serviceForm = document.getElementById('serviceForm');
         const servicesTableBody = document.getElementById('servicesTableBody');
+        const serviceDateFilter = document.getElementById('serviceDateFilter');
+        const serviceDateOrder = document.getElementById('serviceDateOrder');
         const serviceCount = document.getElementById('serviceCount');
         const lastServiceTime = document.getElementById('lastServiceTime');
         const userName = document.getElementById('userName');
         const serviceSelect = document.getElementById('serviceSelect');
         const servicePrice = document.getElementById('servicePrice');
+        const secondServiceSelect = document.getElementById('secondServiceSelect');
+        const secondServicePrice = document.getElementById('secondServicePrice');
+        const serviceTotalPrice = document.getElementById('serviceTotalPrice');
         const clientIdentityNumber = document.getElementById('clientIdentityNumber');
         const clientIdentityOptions = document.getElementById('clientIdentityOptions');
         const clientLookupMessage = document.getElementById('clientLookupMessage');
@@ -251,6 +257,8 @@
         const clientForm = document.getElementById('clientForm');
         const clientMessage = document.getElementById('clientMessage');
         const clientsTableBody = document.getElementById('clientsTableBody');
+        const clientLastVisitFilter = document.getElementById('clientLastVisitFilter');
+        const clientVisitOrder = document.getElementById('clientVisitOrder');
         const clientSubmitButton = document.getElementById('clientSubmitButton');
         const clientCancelButton = document.getElementById('clientCancelButton');
         let editingClientId = null;
@@ -258,6 +266,9 @@
         const currentUser = window.BarberAuth?.getCurrentUser?.();
         if (userName) {
             userName.textContent = currentUser?.name || 'Invitado';
+        }
+        if (dashboardGreeting) {
+            dashboardGreeting.textContent = `Hola, ${currentUser?.name || 'Invitado'}`;
         }
 
         function readStorage(key, errorMessage) {
@@ -325,12 +336,22 @@
             }
 
             serviceSelect.innerHTML = '<option value="">Selecciona un servicio</option>';
+            secondServiceSelect.innerHTML = '<option value="">Sin segundo servicio</option>';
             catalog.forEach((item) => {
                 const option = document.createElement('option');
                 option.value = item.name;
                 option.textContent = item.name;
                 serviceSelect.appendChild(option);
+
+                const secondOption = option.cloneNode(true);
+                secondServiceSelect.appendChild(secondOption);
             });
+        }
+
+        function updateServiceTotal() {
+            const firstPrice = Number(servicePrice.value || 0);
+            const secondPrice = Number(secondServicePrice.value || 0);
+            serviceTotalPrice.value = firstPrice + secondPrice;
         }
 
         function renderBarbers() {
@@ -387,7 +408,12 @@
                     };
                     const totalIncome = barberServices.reduce((sum, service) => sum + Number(service.price || 0), 0);
                     const serviceIds = barberServices.map((service) => service.id || service.registeredAt);
-                    pendingLiquidations.appendChild(createLiquidationCard({ ...fallbackBarber, serviceIds }, totalIncome, false));
+                    const cutoffDate = barberServices
+                        .map((service) => service.registeredAt)
+                        .filter(Boolean)
+                        .sort()
+                        .pop();
+                    pendingLiquidations.appendChild(createLiquidationCard({ ...fallbackBarber, serviceIds, cutoffDate }, totalIncome, false));
                 });
             }
 
@@ -403,7 +429,7 @@
         function createLiquidationCard(item, totalIncome, isHistory) {
             const card = document.createElement('article');
             card.className = 'liquidation-card';
-            const cutoffDate = item.cutoffDate || new Date().toISOString().slice(0, 10);
+            const cutoffDate = (item.cutoffDate || new Date().toISOString()).slice(0, 10);
             card.innerHTML = `
                 <div class="liquidation-card-header">
                     <div>
@@ -415,10 +441,7 @@
                 <div class="liquidation-card-details">
                     <span><b>Banco:</b> ${item.bankName || 'No registrado'}</span>
                     <span><b>Cuenta:</b> ${item.accountType || 'No registrada'} · ${item.accountNumber || 'No registrada'}</span>
-                    <label class="cutoff-date">
-                        Fecha de corte
-                        <input type="date" value="${cutoffDate}" ${isHistory ? 'disabled' : ''}>
-                    </label>
+                    <span class="cutoff-date"><b>Fecha de corte:</b> ${formatDate(cutoffDate)}</span>
                 </div>
                 ${isHistory ? `<span class="liquidation-status">Liquidada el ${formatDate(item.settledAt || cutoffDate)}</span>` : `
                     <label class="liquidation-check">
@@ -430,7 +453,6 @@
 
             if (!isHistory) {
                 const checkbox = card.querySelector('input[type="checkbox"]');
-                const dateInput = card.querySelector('input[type="date"]');
                 checkbox.addEventListener('change', () => {
                     if (!checkbox.checked) return;
                     const liquidations = getLiquidations();
@@ -438,7 +460,7 @@
                         ...item,
                         totalIncome,
                         serviceIds: item.serviceIds || [],
-                        cutoffDate: dateInput.value,
+                        cutoffDate,
                         settledAt: new Date().toISOString()
                     });
                     writeStorage(liquidationsKey, liquidations);
@@ -459,15 +481,59 @@
 
         function renderClients() {
             const clients = getClients();
+            const services = getServices();
+            const visitPeriod = getClientVisitPeriod(clientLastVisitFilter.value);
+            const visitOrder = clientVisitOrder.value;
             clientsTableBody.innerHTML = '';
             if (!clients.length) {
-                clientsTableBody.innerHTML = '<tr><td colspan="6" class="empty-state">Aún no hay clientes registrados.</td></tr>';
+                clientsTableBody.innerHTML = '<p class="empty-state">Aún no hay clientes registrados.</p>';
             } else {
-                clients.forEach((client) => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `<td>${client.fullName}</td><td>${client.identityNumber}</td><td>${client.phone}</td><td>${client.birthDate}</td><td>${client.email}</td><td><button type="button" class="secondary-btn client-edit" data-id="${client.id}">Editar</button> <button type="button" class="secondary-btn client-delete" data-id="${client.id}">Eliminar</button></td>`;
-                    clientsTableBody.appendChild(row);
+                const clientCards = clients.map((client) => {
+                    const clientServices = services.filter((service) => {
+                        return (service.clientIdentityNumber || service.client) === client.identityNumber;
+                    });
+                    const lastVisit = clientServices
+                        .map((service) => service.registeredAt)
+                        .filter(Boolean)
+                        .sort()
+                        .pop();
+                    return { client, clientServices, lastVisit };
+                }).filter(({ lastVisit }) => {
+                    if (!visitPeriod) return true;
+                    if (!lastVisit) return false;
+                    const visitDate = new Date(lastVisit);
+                    return visitDate >= visitPeriod.start && visitDate <= visitPeriod.end;
+                }).sort((first, second) => {
+                    const difference = first.clientServices.length - second.clientServices.length;
+                    return visitOrder === 'asc' ? difference : -difference;
                 });
+
+                if (!clientCards.length) {
+                    clientsTableBody.innerHTML = '<p class="empty-state">No hay clientes que coincidan con el filtro.</p>';
+                } else {
+                    clientCards.forEach(({ client, clientServices, lastVisit }) => {
+                        const card = document.createElement('article');
+                        card.className = 'client-card';
+                        card.innerHTML = `
+                            <div class="client-card-header">
+                                <div>
+                                    <h3>${client.fullName}</h3>
+                                    <p>${client.identityNumber}</p>
+                                </div>
+                                <strong>${clientServices.length} visita${clientServices.length === 1 ? '' : 's'}</strong>
+                            </div>
+                            <div class="client-card-details">
+                                <span><b>Teléfono:</b> ${client.phone}</span>
+                                <span><b>Última visita:</b> ${lastVisit ? formatVisitDate(lastVisit) : 'Sin visitas'}</span>
+                            </div>
+                            <div class="client-card-actions">
+                                <button type="button" class="secondary-btn client-edit" data-id="${client.id}">Editar</button>
+                                <button type="button" class="secondary-btn client-delete" data-id="${client.id}">Eliminar</button>
+                            </div>
+                        `;
+                        clientsTableBody.appendChild(card);
+                    });
+                }
             }
 
             clientIdentityOptions.innerHTML = '';
@@ -476,6 +542,52 @@
                 option.value = client.identityNumber;
                 option.label = client.fullName;
                 clientIdentityOptions.appendChild(option);
+            });
+        }
+
+        function getClientVisitPeriod(period) {
+            if (period === 'all') return null;
+
+            const today = new Date();
+            const start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+            const end = new Date(start);
+            end.setHours(23, 59, 59, 999);
+
+            if (period === 'today') {
+                return { start, end };
+            }
+            if (period === 'yesterday') {
+                start.setDate(start.getDate() - 1);
+                end.setDate(end.getDate() - 1);
+                return { start, end };
+            }
+            if (period === 'week') {
+                const dayOfWeek = start.getDay() || 7;
+                start.setDate(start.getDate() - dayOfWeek + 1);
+                return { start, end };
+            }
+            if (period === 'month') {
+                start.setDate(1);
+                return { start, end };
+            }
+            if (period === 'year') {
+                start.setMonth(0, 1);
+                return { start, end };
+            }
+            if (period === 'lastYear') {
+                start.setFullYear(start.getFullYear() - 1, 0, 1);
+                end.setFullYear(end.getFullYear() - 1, 11, 31);
+                return { start, end };
+            }
+
+            return null;
+        }
+
+        function formatVisitDate(value) {
+            return new Date(value).toLocaleDateString('es-ES', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
             });
         }
 
@@ -495,15 +607,28 @@
 
         function renderServices() {
             const services = getServices();
+            const servicePeriod = getClientVisitPeriod(serviceDateFilter.value);
+            const order = serviceDateOrder.value;
             serviceCount.textContent = services.length;
             lastServiceTime.textContent = services.length ? formatDateTime(services[0].registeredAt) : '--:--';
             servicesTableBody.innerHTML = '';
-            if (!services.length) {
+            const filteredServices = services.filter((service) => {
+                if (!servicePeriod) return true;
+                if (!service.registeredAt) return false;
+                const serviceDate = new Date(service.registeredAt);
+                return serviceDate >= servicePeriod.start && serviceDate <= servicePeriod.end;
+            }).sort((first, second) => {
+                const firstDate = new Date(first.registeredAt || 0).getTime();
+                const secondDate = new Date(second.registeredAt || 0).getTime();
+                return order === 'asc' ? firstDate - secondDate : secondDate - firstDate;
+            });
+
+            if (!filteredServices.length) {
                 servicesTableBody.innerHTML = '<tr><td colspan="6" class="empty-state">Aún no hay servicios registrados.</td></tr>';
                 return;
             }
 
-            services.forEach((service) => {
+            filteredServices.forEach((service) => {
                 const row = document.createElement('tr');
                 row.innerHTML = `<td>${service.name}</td><td>${service.clientName || service.client || 'Sin identificar'}<br><small>${service.clientIdentityNumber || ''}</small></td><td>${service.barber}</td><td>${formatPrice(service.price)}</td><td>${formatDateTime(service.registeredAt)}</td><td><button type="button" class="secondary-btn service-edit" data-id="${service.id || service.registeredAt}">Editar</button></td>`;
                 servicesTableBody.appendChild(row);
@@ -628,6 +753,8 @@
             modal.style.display = 'none';
             serviceForm.reset();
             servicePrice.value = '';
+            secondServicePrice.value = '';
+            serviceTotalPrice.value = '';
             editingServiceId = null;
             serviceSubmitButton.textContent = 'Guardar servicio';
         }
@@ -721,6 +848,12 @@
         serviceSelect.addEventListener('change', () => {
             const selectedItem = getCatalog().find((item) => item.name === serviceSelect.value);
             servicePrice.value = selectedItem ? selectedItem.price : '';
+            updateServiceTotal();
+        });
+        secondServiceSelect.addEventListener('change', () => {
+            const selectedItem = getCatalog().find((item) => item.name === secondServiceSelect.value);
+            secondServicePrice.value = selectedItem ? selectedItem.price : '';
+            updateServiceTotal();
         });
         clientIdentityNumber.addEventListener('input', updateClientLookupMessage);
         openClientFromService.addEventListener('click', () => {
@@ -869,6 +1002,11 @@
             clientMessage.className = 'form-message';
         });
 
+        clientLastVisitFilter.addEventListener('change', renderClients);
+        clientVisitOrder.addEventListener('change', renderClients);
+        serviceDateFilter.addEventListener('change', renderServices);
+        serviceDateOrder.addEventListener('change', renderServices);
+
         barbersTableBody.addEventListener('click', (event) => {
             const editButton = event.target.closest('.barber-edit');
             if (editButton) {
@@ -983,9 +1121,14 @@
             catalogMessage.className = 'form-message';
         });
 
-        serviceForm.addEventListener('submit', (event) => {
-            event.preventDefault();
+        function saveService() {
+            if (!serviceForm.reportValidity()) return;
             const service = Object.fromEntries(new FormData(serviceForm).entries());
+            const serviceNames = [service.name, service.secondServiceName].filter(Boolean);
+            const totalPrice = Number(service.price || 0) + Number(service.secondServicePrice || 0);
+            service.serviceNames = serviceNames;
+            service.name = serviceNames.join(' + ');
+            service.price = totalPrice;
             const clientIdentity = service.clientIdentityNumber.trim();
             const registeredClient = getClients().find((client) => client.identityNumber === clientIdentity);
             service.clientIdentityNumber = clientIdentity;
@@ -1006,6 +1149,11 @@
             writeStorage(servicesKey, services);
             renderServices();
             closeModal();
+        }
+
+        serviceForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            saveService();
         });
 
         servicesTableBody.addEventListener('click', (event) => {
@@ -1037,7 +1185,14 @@
             barberSelect.value = service.barber;
             clientIdentityNumber.value = service.clientIdentityNumber || service.client || '';
             updateClientLookupMessage();
-            servicePrice.value = service.price;
+            const serviceNames = service.serviceNames || [service.name];
+            serviceSelect.value = serviceNames[0] || '';
+            secondServiceSelect.value = serviceNames[1] || '';
+            const firstCatalogItem = getCatalog().find((item) => item.name === serviceNames[0]);
+            const secondCatalogItem = getCatalog().find((item) => item.name === serviceNames[1]);
+            servicePrice.value = firstCatalogItem ? firstCatalogItem.price : service.price;
+            secondServicePrice.value = secondCatalogItem ? secondCatalogItem.price : '';
+            updateServiceTotal();
             editingServiceId = service.id || service.registeredAt;
             serviceSubmitButton.textContent = 'Guardar cambios';
             modal.style.display = 'grid';
