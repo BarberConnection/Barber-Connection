@@ -95,3 +95,46 @@ export async function desactivarServicio(formData: FormData) {
 
   redirect('/catalogo');
 }
+
+// Pestaña de barberos
+
+export async function crearBarbero(formData: FormData) {
+  const supabase = await createClient();
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect('/login');
+
+  const { data: membership } = await supabase
+    .from('shop_members')
+    .select('shop_id')
+    .eq('user_id', user!.id)
+    .limit(1)
+    .single();
+
+  if (!membership) redirect('/login');
+
+  const fullName = formData.get('fullName') as string;
+  const identityNumber = formData.get('identityNumber') as string;
+  const phone = formData.get('phone') as string;
+
+  await supabase.from('barbers').insert({
+    shop_id: membership.shop_id,
+    full_name: fullName,
+    identity_number: identityNumber,
+    phone: phone || null,
+  });
+
+  redirect('/barberos');
+}
+
+export async function desactivarBarbero(formData: FormData) {
+  const supabase = await createClient();
+  const id = formData.get('id') as string;
+
+  await supabase
+    .from('barbers')
+    .update({ active: false })
+    .eq('id', id);
+
+  redirect('/barberos');
+}

@@ -12,6 +12,8 @@ export default async function Home() {
 
       <nav style={{ marginBottom: '1.5rem' }}>
         <a href="/catalogo">Ir al catálogo de servicios</a>
+        {' · '}
+        <a href="/barberos">Ir a barberos</a>
       </nav>
 
       <form action={logout}>
