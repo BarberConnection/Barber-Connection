@@ -14,6 +14,15 @@ export default async function Home() {
         <a href="/catalogo">Ir al catálogo de servicios</a>
         {' · '}
         <a href="/barberos">Ir a barberos</a>
+
+                {' · '}
+        <a href="/comisiones">Ir a comisiones</a>
+                {' · '}
+        <a href="/clientes">Ir a clientes</a>
+        
+                {' · '}
+        <a href="/servicios">Registrar servicio</a>
+
       </nav>
 
       <form action={logout}>

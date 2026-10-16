@@ -15,6 +15,7 @@ export default async function BarberosPage() {
 
   const { data: barberos } = await supabase
     .from('barbers')
+    
     .select('*')
     .eq('shop_id', membership?.shop_id)
     .eq('active', true)
