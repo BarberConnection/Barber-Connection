@@ -304,3 +304,47 @@ export async function anularServicio(formData: FormData) {
 
   redirect('/servicios?ok=anulado');
 }
+
+
+// las liquidaciones 
+
+export async function liquidarBarbero(formData: FormData) {
+  const { supabase } = await getShopId();
+
+  const barberId = formData.get('barberId') as string;
+  const cutoff = formData.get('cutoff') as string;
+  const expected = parseInt(formData.get('expected') as string, 10);
+  const volver = '/liquidacion?corte=' + encodeURIComponent(cutoff);
+
+  if (!barberId || !cutoff || isNaN(expected)) {
+    redirect(volver + '&error=' + encodeURIComponent('Datos incompletos'));
+  }
+
+  const { error } = await supabase.rpc('liquidate_barber', {
+    p_barber_id: barberId,
+    p_cutoff: cutoff,
+    p_expected_commission: expected,
+  });
+
+  if (error) {
+    redirect(volver + '&error=' + encodeURIComponent(error.message));
+  }
+
+  redirect(volver + '&ok=liquidado');
+}
+
+export async function revertirLiquidacion(formData: FormData) {
+  const { supabase } = await getShopId();
+
+  const id = formData.get('id') as string;
+
+  const { error } = await supabase.rpc('revert_liquidation', {
+    p_liquidation_id: id,
+  });
+
+  if (error) {
+    redirect('/liquidacion?error=' + encodeURIComponent(error.message));
+  }
+
+  redirect('/liquidacion?ok=revertida');
+}

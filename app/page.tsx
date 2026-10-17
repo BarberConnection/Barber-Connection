@@ -23,6 +23,9 @@ export default async function Home() {
                 {' · '}
         <a href="/servicios">Registrar servicio</a>
 
+        {' · '}
+        <a href="/liquidacion">Liquidación</a>
+        
       </nav>
 
       <form action={logout}>
